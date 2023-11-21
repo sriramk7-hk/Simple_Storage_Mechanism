@@ -11,6 +11,21 @@ import path from "path"
 import pinataSDK from "@pinata/sdk"
 import 'dotenv/config'
 
+const connectAndSubscribe = () => {
+    let client = mqtt.connect("ws://192.168.0.197:8080")
+    client.on('connect', () => {
+        console.log(`Successfully Connected`)
+        client.subscribe('/topic/help', (err) => {
+            if(err){
+                console.log(err)
+            }
+        })
+    })
+    client.on('message', (topic, payload, packet) => {
+        console.log(payload.toString())
+    })
+}
+
 const app = express()
 const helia = await createHelia()
 const saveString = strings(helia)
@@ -111,6 +126,7 @@ app.post('/files', upload, async (req, res) => {
 })
 
 app.listen(4000, () => {
+    connectAndSubscribe()
     console.log("Server is listening 4000")
 })
 
