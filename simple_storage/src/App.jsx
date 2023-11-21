@@ -1,33 +1,78 @@
-import {connect, } from "mqtt"
-import { useState } from "react";
 import axios from "axios"
+import { Header, Container, Button, Grid, Table } from "semantic-ui-react"
+import { Component } from "react";
 
-function App() {
+class App extends Component {
 
-  const [pubMessage, setPubMessage] = useState()
-
-  const handlePublish = () => {
-    const client = connect("ws://192.168.0.197:8080");
-    client.publish("/Hello", pubMessage);
-    client.subscribe("/topic/help");
-    client.on("message", (topic, message) => {
-      console.log(message.toString())
-    })
+  constructor(props){
+    super(props);
+    
+    this.state = {
+      files: [],
+      file: {}
+    }
+    this.onReload()
   }
 
-  return (
-    <>
-      <input type="file" onChange={async (event) => {
-          const form = new FormData()
-          form.set("file", event.target.files[0])
-          const res = await axios.post('http://localhost:4000/files',form)
-          console.log(res)
-      }} />
-      <input placeholder="Enter Message to publish" onChange={(e) => setPubMessage(e.target.value)}/>
-      <button onClick={handlePublish}>Publish</button>
-      
-    </>
-  )
+
+  handleFileChange = (event) => {
+    this.setState({file: event.target.files[0]})
+  }
+
+  onReload = async () => {
+    const res = await axios.get(`http://localhost:4000/`)
+    this.setState({files : res.data.data})
+  }
+
+  handleSubmit = async () => {
+    let {file} = this.state
+    const form = new FormData()
+    form.set("file", file)
+    const res = await axios.post('http://localhost:4000/files',form)
+    console.log(res)
+  }
+
+  render() {
+    let {files} = this.state
+    return (
+      <Grid style={{margin: "20px"}}>
+        <Grid.Row>
+          <Header style={{paddingLeft: "35%"}}>IIoT data storage - BLOCKCHAIN</Header>
+        </Grid.Row>
+        <Grid.Row>
+          <Grid.Column width="6" floated="left" style={{display: "grid", "rowGap": "4rem", width: "400px", padding: "80px", height: "460px"}}> 
+              <Header textAlign="center">Upload Data</Header>
+              <input hidden type="file" id="file" onChange={(event) => this.handleFileChange(event)}/>
+              <label htmlFor="file" style={{border: "0.25rem dashed red", borderRadius: "0.5rem", height: "80px", textAlign: "center"}}><p style={{marginTop: "25px", fontWeight: "600"}}>Click to Upload Photo</p></label>
+              <Button onClick={() => this.handleSubmit()}>Publish</Button>
+          </Grid.Column>
+          <Grid.Column floated="right" width="10" style={{ padding: "80px"}}>
+            <Table celled striped>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>S.No</Table.HeaderCell>
+                  <Table.HeaderCell>Content</Table.HeaderCell>
+                  <Table.HeaderCell>Link</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {
+                  files ? 
+                    files.map((val, key) => (
+                      <Table.Row key={key}>
+                        <Table.Cell>{key+1}</Table.Cell>
+                        <Table.Cell>{val.type}</Table.Cell>
+                        <Table.Cell><a href={`https://ipfs.io/ipfs/${val.CID}`}>{val.CID}</a></Table.Cell>
+                      </Table.Row>
+                    )) : null
+                }
+              </Table.Body>
+            </Table>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+    )
+  }
 }
 
 export default App
