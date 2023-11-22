@@ -1,6 +1,7 @@
 import axios from "axios"
 import { Header, Container, Button, Grid, Table } from "semantic-ui-react"
 import { Component } from "react";
+import _ from "lodash"
 
 class App extends Component {
 
@@ -17,23 +18,32 @@ class App extends Component {
 
   handleFileChange = (event) => {
     this.setState({file: event.target.files[0]})
+    console.log(event.target.files[0])
   }
 
   onReload = async () => {
-    const res = await axios.get(`http://localhost:4000/`)
-    this.setState({files : res.data.data})
+    try {
+      const res = await axios.get(`http://localhost:4000/`)
+      this.setState({files : res.data.data})
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   handleSubmit = async () => {
     let {file} = this.state
     const form = new FormData()
     form.set("file", file)
-    const res = await axios.post('http://localhost:4000/files',form)
-    console.log(res)
+    try {
+      const res = await axios.post('http://localhost:4000/files',form)
+      this.onReload()
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   render() {
-    let {files} = this.state
+    let {files, file} = this.state
     return (
       <Grid style={{margin: "20px"}}>
         <Grid.Row>
@@ -43,7 +53,7 @@ class App extends Component {
           <Grid.Column width="6" floated="left" style={{display: "grid", "rowGap": "4rem", width: "400px", padding: "80px", height: "460px"}}> 
               <Header textAlign="center">Upload Data</Header>
               <input hidden type="file" id="file" onChange={(event) => this.handleFileChange(event)}/>
-              <label htmlFor="file" style={{border: "0.25rem dashed red", borderRadius: "0.5rem", height: "80px", textAlign: "center"}}><p style={{marginTop: "25px", fontWeight: "600"}}>Click to Upload Photo</p></label>
+              <label htmlFor="file" style={{border: "0.25rem dashed red", borderRadius: "0.5rem", height: "80px", textAlign: "center"}}>{ file.name ? <p>{`File uploaded ${file.name}`}</p> : <p style={{marginTop: "25px", fontWeight: "600"}}>Click to Upload Photo</p>}</label>
               <Button onClick={() => this.handleSubmit()}>Publish</Button>
           </Grid.Column>
           <Grid.Column floated="right" width="10" style={{ padding: "80px"}}>
