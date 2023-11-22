@@ -21,8 +21,24 @@ const connectAndSubscribe = () => {
             }
         })
     })
-    client.on('message', (topic, payload, packet) => {
+    client.on('message', async (topic, payload, packet) => {
         console.log(payload.toString())
+        const address = await saveString.add(payload.toString())
+        if(address){
+            try{
+                const ipfsData = await ipfsdata.create({
+                    type: "string",
+                    CID: address,
+                    content: {
+                        value: "text"
+                    }
+                })
+                console.log(ipfsData)
+            }catch(error){
+                console.log(error)
+            }
+        }
+
     })
 }
 
