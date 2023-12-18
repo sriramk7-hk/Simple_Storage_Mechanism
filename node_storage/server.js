@@ -12,7 +12,7 @@ import pinataSDK from "@pinata/sdk"
 import 'dotenv/config'
 
 const connectAndSubscribe = () => {
-    let client = mqtt.connect("ws://192.168.0.197:8080")
+    let client = mqtt.connect("ws://192.168.0.118:8080")
     client.on('connect', () => {
         console.log(`Successfully Connected to MQTT`)
         client.subscribe('/topic/help', (err) => {
